@@ -3,6 +3,8 @@ Map = Class{}
 TILE_BRICK = 3
 TILE_EMPTY = 30
 
+local SCROLL_SPEED = 62
+
 function Map:init()
     self.spritesheet = love.graphics.newImage('graphics/tiles.png')
     self.tileWidth = 16
@@ -11,6 +13,9 @@ function Map:init()
     self.mapHeight = 28
     self.tiles = {}
 
+    self.camX = 0
+    self.camY = 0
+    
     self.tileSprites = generateQuads(self.spritesheet, self.tileWidth, self.tileHeight)
     
     --Filling the map with empty tiles
@@ -37,7 +42,7 @@ function Map:getTile(x, y)
 end
 
 function Map:update(dt)
-
+    self.camX = self.camX + SCROLL_SPEED * dt
 end
 
 function Map:render()

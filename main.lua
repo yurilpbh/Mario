@@ -18,11 +18,13 @@ function love.load()
 end
 
 function love.update(dt)
-
+    map:update(dt)
 end
 
 function love.draw()
     push:apply('start')
+
+    love.graphics.translate(math.floor(-map.camX), math.floor(-map.camY))
     love.graphics.clear(108/255, 140/255, 1, 1)
     --love.graphics.print("Hello world!")
     map:render()
