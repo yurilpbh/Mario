@@ -1,28 +1,29 @@
 require 'Util'
+require 'Player'
 
 Map = Class{}
 
-TILE_BRICK = 3
-TILE_EMPTY = 30
-CLOUD_LEFT = 666
-CLOUD_MIDDLE = 667
-CLOUD_RIGHT = 668
-BUSH_LEFT = 315
-BUSH_MIDDLE = 316
-BUSH_RIGHT = 317
-MUSHROOM_TOP = 34
-MUSHROOM_DOWN = 34
-JUMP_BLOCK = 27
+TILE_BRICK = 1
+TILE_EMPTY = 4
+CLOUD_LEFT = 6
+CLOUD_RIGHT = 7
+BUSH_LEFT = 2
+BUSH_RIGHT = 3
+MUSHROOM_TOP = 10
+MUSHROOM_DOWN = 11
+JUMP_BLOCK = 5
 
 local SCROLL_SPEED = 62
 
 function Map:init()
-    self.spritesheet = love.graphics.newImage('graphics/tiles.png')
+    self.spritesheet = love.graphics.newImage('graphics/spritesheet.png')
     self.tileWidth = 16
     self.tileHeight = 16
     self.mapWidth = 30
     self.mapHeight = 28
     self.tiles = {}
+
+    self.player = Player(self)
 
     self.camX = 0
     self.camY = -3
@@ -50,8 +51,7 @@ function Map:init()
                 local cloudStart = math.random(self.mapHeight / 2 - 6)
 
                 self:setTile(x, cloudStart, CLOUD_LEFT)
-                self:setTile(x + 1, cloudStart, CLOUD_MIDDLE)
-                self:setTile(x + 2, cloudStart, CLOUD_RIGHT)
+                self:setTile(x + 1, cloudStart, CLOUD_RIGHT)
             end
         end
 
@@ -71,11 +71,6 @@ function Map:init()
             local bushLevel = self.mapHeight / 2 - 1
             --Place bush component and the column of bricks
             self:setTile(x, bushLevel, BUSH_LEFT)
-            for y = self.mapHeight / 2, self.mapHeight do
-                self:setTile(x, y, TILE_BRICK)
-            end
-            x = x + 1
-            self:setTile(x, bushLevel, BUSH_MIDDLE)
             for y = self.mapHeight / 2, self.mapHeight do
                 self:setTile(x, y, TILE_BRICK)
             end
@@ -121,6 +116,8 @@ function Map:update(dt)
     elseif love.keyboard.isDown('d') then --Right movement
         self.camX = math.min(self.mapWidthPixels - VIRTUAL_WIDTH, math.floor(self.camX + SCROLL_SPEED * dt))
     end
+
+    self.player:update(dt)
 end
 
 function Map:render()
@@ -130,4 +127,6 @@ function Map:render()
                 (x-1) * self.tileWidth, (y-1) * self.tileHeight)
         end
     end
+
+    self.player:render()
 end
