@@ -107,15 +107,9 @@ function Map:getTile(x, y)
 end
 
 function Map:update(dt)
-    if love.keyboard.isDown('w') then --Up movement
-        self.camY = math.max(0, math.floor(self.camY - SCROLL_SPEED * dt))
-    elseif love.keyboard.isDown('s') then --Down movement
-        self.camY = math.min(self.mapHeightPixels - VIRTUAL_HEIGHT, math.floor(self.camY + SCROLL_SPEED * dt))
-    elseif love.keyboard.isDown('a') then --Left movement
-        self.camX = math.max(0, math.floor(self.camX - SCROLL_SPEED * dt))
-    elseif love.keyboard.isDown('d') then --Right movement
-        self.camX = math.min(self.mapWidthPixels - VIRTUAL_WIDTH, math.floor(self.camX + SCROLL_SPEED * dt))
-    end
+    self.camX = math.max(0,
+        math.min(self.player.x - VIRTUAL_WIDTH / 2,
+            math.min(self.mapWidthPixels - VIRTUAL_WIDTH, self.player.x)))
 
     self.player:update(dt)
 end
