@@ -12,6 +12,7 @@ BUSH_RIGHT = 3
 MUSHROOM_TOP = 10
 MUSHROOM_DOWN = 11
 JUMP_BLOCK = 5
+JUMP_BLOCK_HIT = 9
 
 local SCROLL_SPEED = 62
 
@@ -106,12 +107,16 @@ function Map:getTile(x, y)
     return self.tiles[(y-1) * self.mapWidth + x]
 end
 
+function Map:tileAt(x, y)
+    return self:getTile(math.floor(x / self.tileWidth) + 1, math.floor(y / self.tileHeight) + 1)
+end
+
 function Map:update(dt)
+    self.player:update(dt)
+
     self.camX = math.max(0,
         math.min(self.player.x - VIRTUAL_WIDTH / 2,
-            math.min(self.mapWidthPixels - VIRTUAL_WIDTH, self.player.x)))
-
-    self.player:update(dt)
+            math.min(self.mapWidthPixels - VIRTUAL_WIDTH, self.player.x))) 
 end
 
 function Map:render()
