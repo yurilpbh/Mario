@@ -29,6 +29,9 @@ function love.keypressed(key)
     if key == 'escape' then
         love.event.quit()
     end
+    if key == 'return' then
+        love.load()
+    end
 
     love.keyboard.keysPressed[key] = true
 end
