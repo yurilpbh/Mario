@@ -24,7 +24,7 @@ function Map:init()
     self.mapHeight = 28
     self.tiles = {}
 
-    self.music = love.audio.newSource('sounds/music.wav', 'static')
+    --self.music = love.audio.newSource('sounds/music.wav', 'static')
 
     self.player = Player(self)
 
@@ -100,9 +100,9 @@ function Map:init()
         end
     end
 
-    self.music:setLooping(true)
-    self.music:setVolume(0.25)
-    self.music:play()
+    music:setLooping(true)
+    music:setVolume(0.25)
+    music:play()
 end
 
 function Map:setTile(x, y, tile)

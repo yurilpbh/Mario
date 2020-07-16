@@ -5,6 +5,8 @@ WINDOW_HEIGHT = 720
 VIRTUAL_WIDTH = 432
 VIRTUAL_HEIGHT = 243
 
+music = love.audio.newSource('sounds/music.wav', 'static')
+
 Class = require 'class'
 push = require 'push'
 
@@ -30,6 +32,7 @@ function love.keypressed(key)
         love.event.quit()
     end
     if key == 'return' then
+        music:stop()
         love.load()
     end
 
