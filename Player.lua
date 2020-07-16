@@ -2,7 +2,7 @@ require 'Animation'
 
 Player = Class{}
 
-local MOVE_SPEED = 140
+local MOVE_SPEED = 80
 local JUMP_VELOCITY = 400
 local GRAVITY = 30
 
@@ -17,10 +17,15 @@ function Player:init(map)
 
     self.map = map
 
+    self.sounds = {
+        ['jump'] = love.audio.newSource('sounds/jump.wav', 'static'),
+        ['hit'] = love.audio.newSource('sounds/hit.wav', 'static'),
+        ['coin'] = love.audio.newSource('sounds/coin.wav', 'static')
+    }
+
     self.texture = love.graphics.newImage('graphics/blue_alien.png')
     self.frames = generateQuads(self.texture, 16, 20)
     self.currentFrame = nil
-
 
     self.state = 'idle'
     self.direction = 'right'
@@ -57,6 +62,7 @@ function Player:init(map)
                 self.dy = -JUMP_VELOCITY
                 self.state = 'jumping'
                 self.animation  = self.animations['jumping']
+                self.sounds['jump']:play()
             elseif love.keyboard.isDown('a') then
                 self.dx = -MOVE_SPEED
                 self.animations['walking']:restart()
@@ -80,6 +86,7 @@ function Player:init(map)
                 self.dy = -JUMP_VELOCITY
                 self.state = 'jumping'
                 self.animation  = self.animations['jumping']
+                self.sounds['jump']:play()
             elseif love.keyboard.isDown('a') then
                 self.dx = -MOVE_SPEED
                 self.animation = self.animations['walking']
@@ -93,8 +100,20 @@ function Player:init(map)
                 self.dx = 0
                 self.state = 'idle'
             end
+
+            self:checkRightCollision()
+            self:checkLeftCollision()
+
+            if not self.map:collides(self.map:tileAt(self.x, self.y + self.height)) and
+                not self.map:collides(self.map:tileAt(self.x + self.width - 1, self.y + self.height)) then
+                self.state = 'jumping'
+                self.animation = self.animations['jumping']
+            end
         end,
         ['jumping'] = function(dt)
+            if self.y > 300 then
+                return
+            end
             if love.keyboard.isDown('a') then
                 self.direction = 'left'
                 self.dx = -MOVE_SPEED
@@ -105,14 +124,39 @@ function Player:init(map)
 
             self.dy = self.dy + GRAVITY
 
-            if self.y >= self.map.tileHeight * (self.map.mapHeight / 2 - 1) - self.height then
-                self.y = self.map.tileHeight * (self.map.mapHeight / 2 - 1) - self.height
+            if self.map:collides(self.map:tileAt(self.x, self.y + self.height)) or
+                self.map:collides(self.map:tileAt(self.x + self.width - 1, self.y + self.height)) then
+                    
                 self.dy = 0
                 self.state = 'idle'
                 self.animation = self.animations[self.state]
+                self.y = (self.map:tileAt(self.x, self.y + self.height).y - 1) * self.map.tileHeight - self.height
             end
+
+            self:checkRightCollision()
+            self:checkLeftCollision()
         end
     }
+end
+
+function Player:checkLeftCollision()
+    if self.dx < 0 then
+        if self.map:collides(self.map:tileAt(self.x - 1, self.y)) or 
+            self.map:collides(self.map:tileAt(self.x - 1, self.y + self.height - 1)) then
+            self.dx = 0
+            self.x = self.map:tileAt(self.x - 1, self.y).x * self.map.tileWidth
+        end
+    end
+end
+
+function Player:checkRightCollision()
+    if self.dx > 0 then
+        if self.map:collides(self.map:tileAt(self.x + self.width, self.y)) or 
+            self.map:collides(self.map:tileAt(self.x + self.width, self.y + self.height - 1)) then
+            self.dx = 0
+            self.x = (self.map:tileAt(self.x + self.width, self.y).x - 1) * self.map.tileWidth - self.width
+        end
+    end
 end
 
 function Player:update(dt)
@@ -122,24 +166,32 @@ function Player:update(dt)
     self.x = self.x + self.dx * dt
 
     if self.dy < 0 then
-        if self.map:tileAt(self.x, self.y) ~= TILE_EMPTY or
-            self.map:tileAt(self.x + self.width - 1, self.y) ~= TILE_EMPTY then
+        if self.map:tileAt(self.x, self.y).id ~= TILE_EMPTY or
+            self.map:tileAt(self.x + self.width - 1, self.y).id ~= TILE_EMPTY then
             --Reset y velocity
             self.dy = 0
 
             --Change block to different block
-            if self.map:tileAt(self.x, self.y) == JUMP_BLOCK then
+            if self.map:tileAt(self.x, self.y).id == JUMP_BLOCK then
+                
                 self.map:setTile(math.floor(self.x / self.map.tileWidth) + 1, 
-                    math.floor(self.y / self.map.tileHeight) + 1, JUMP_BLOCK_HIT)
+                math.floor(self.y / self.map.tileHeight) + 1, JUMP_BLOCK_HIT)
+                self.sounds['coin']:play()
             end
-            if self.map:tileAt(self.x + self.width - 1, self.y) == JUMP_BLOCK then
+            if self.map:tileAt(self.x + self.width - 1 , self.y).id == JUMP_BLOCK then
+
                 self.map:setTile(math.floor((self.x + self.width - 1) / self.map.tileWidth) + 1, 
                     math.floor(self.y / self.map.tileHeight) + 1, JUMP_BLOCK_HIT)
+                self.sounds['coin']:play()
+            end
+            if self.map:tileAt(self.x, self.y).id == JUMP_BLOCK_HIT or
+                self.map:tileAt(self.x + self.width, self.y).id == JUMP_BLOCK_HIT then
+                
+                self.sounds['hit']:play()
             end
         end
     end
-    self.y = math.min(self.y + self.dy * dt, self.map.tileHeight * 
-        ((self.map.mapHeight - 2)/2) - self.height)
+    self.y = self.y + self.dy * dt
 end
 
 function Player:render()
