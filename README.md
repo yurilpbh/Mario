@@ -2,6 +2,7 @@ This project was developed following the class of CS50, Harvad University, by Co
 The link to the class is: https://cs50.harvard.edu/x/2020/tracks/games/
 
 This is a kind of Mario game.
+![](Mario.gif)
 
 The "Map.lua" is a class that contains the methods of the map in the game.\
 The "Player.lua" is a class that contains the methods of the player, that is a blue alien, in the game.\
