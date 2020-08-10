@@ -13,6 +13,12 @@ MUSHROOM_TOP = 10
 MUSHROOM_DOWN = 11
 JUMP_BLOCK = 5
 JUMP_BLOCK_HIT = 9
+FLAG_TOP = 8
+FLAG_MIDDLE = 12
+FLAG_BOT = 16
+FLAG_STOP_TOP = 14
+FLAG_MOVE = 15
+FLAG_STOP_BOT = 13
 
 local SCROLL_SPEED = 62
 
@@ -44,7 +50,8 @@ function Map:init()
     end
 
     --Begin generating the terrain using vertical scan lines
-    local x = 1
+    local x, pyramidHeight = 1, math.random(3,self.mapHeight / 2 - 6)
+    local aux_PyramidY = self.mapHeight / 2 - 1
     while x < self.mapWidth do
         --2% chance to generate a cloud
         --Make sure we're 2 tiles from edge at least
@@ -58,8 +65,33 @@ function Map:init()
             end
         end
 
+        if pyramidHeight > 0 and x == self.mapWidth - (pyramidHeight + 5) then
+            for aux_x = x, self.mapWidth do
+                if(aux_x >= x and aux_x < x + pyramidHeight) then
+                    for y = self.mapHeight / 2 - 1, aux_PyramidY, -1 do
+                        self:setTile(aux_x, y, TILE_BRICK)
+                    end
+                    aux_PyramidY = aux_PyramidY - 1
+                end
+                if(aux_x == x + pyramidHeight + 2) then
+                    for y = self.mapHeight / 2 - pyramidHeight, self.mapHeight / 2 - 1 do
+                        if (y == self.mapHeight / 2 - pyramidHeight) then
+                            self:setTile(aux_x, y, FLAG_TOP)
+                            self:setTile(aux_x + 1, y, FLAG_STOP_TOP)
+                        elseif (y == self.mapHeight / 2 - 1) then
+                            self:setTile(aux_x, y, FLAG_BOT)
+                        else
+                            self:setTile(aux_x, y, FLAG_MIDDLE)
+                        end
+                    end
+                end
+                for y = self.mapHeight / 2, self.mapHeight do
+                    self:setTile(aux_x, y, TILE_BRICK)
+                end
+            end
+            break
         --5% chance to generate a mushroom
-        if math.random(20) == 1 then
+        elseif math.random(20) == 1 then
             --Left side of pipe
             self:setTile(x, self.mapHeight / 2 - 2, MUSHROOM_TOP)
             self:setTile(x, self.mapHeight / 2 - 1, MUSHROOM_DOWN)
@@ -101,7 +133,7 @@ function Map:init()
     end
 
     music:setLooping(true)
-    music:setVolume(0.25)
+    music:setVolume(0.10)
     music:play()
 end
 
